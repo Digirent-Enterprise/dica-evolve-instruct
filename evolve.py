@@ -28,7 +28,6 @@ class Mutation(Enum):
     CONCRETIZE = 3
     INCREASE_REASONING = 4
     COMPLICATE = 5
-    SWITCH_TOPIC = 6
 
 
 class WizardLM:
@@ -120,15 +119,6 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese."
             self.prompt_templates['base'] + \
             f"""If #Given Prompt# can be solved with just a few simple thinking processes, rewrite it to explicitly 
             request multi-step reasoning, and create #New Prompt#. {write_in_vietnamese}
-
-#Given Prompt#:
-<PROMPT>
-"""
-
-        self.prompt_templates[Mutation.SWITCH_TOPIC] = \
-            self.prompt_templates['base'] + \
-            f"""Rewrite #Given Prompt# by switching the topic, keeping the domain and difficulty level similar, 
-            and create #New Prompt#. {write_in_vietnamese}
 
 #Given Prompt#:
 <PROMPT>
