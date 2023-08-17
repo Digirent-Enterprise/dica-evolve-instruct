@@ -1,0 +1,22 @@
+[
+  {
+    "instruction": "Kính gửi bác sĩ, mắt em một bên thường xuyên bị co giật. Em có đi khám ở bệnh viện thì họ bảo do mắt em bị cận một độ mà không đeo kính nên mắt bị yếu. Em cũng thi thoảng bị đau đầu nên bệnh viện có chỉ định chụp cộng hưởng từ sọ não để xem có vấn đề gì không. Bác sĩ kết luận là não của em bình thường và về uống thuốc theo chỉ định. Nếu sau một tháng không đỡ thì tái khám. Bác sĩ chỉ kê đơn thuốc viên uống sáng mắt và lọ nhỏ mắt. Em uống đã được 20 ngày rồi nhưng tình trạng mắt em vẫn không đỡ. Mắt giật giật thường xuyên khiến em rất khó chịu. Em nhờ bác sĩ tư vấn giúp, em cảm ơn bác sĩ nhiều.",
+    "input": "",
+    "output": "Chào bạn, Trường hợp cận một độ là không cao nhưng cũng làm người bệnh nhìn không rõ, đôi lúc phải căng mắt ra để tập trung nhìn một vật nào đó, có thể gây mỏi mắt, giật mắt. Bạn đã khám mắt và chụp MRI, kết luận không có gì nghiêm trọng thì có thể yên tâm. Với tật máy cơ mắt, bạn nên nghỉ ngơi, làm việc điều độ, áp dụng quy tắc 20 - 20 - 20, tránh thức khuya, dẹp bỏ phiền muộn, suy nghĩ là có thể tự hết. Bạn cũng có thể chườm ấm, kết hợp xoa mắt. Thân mến!"
+  },
+  {
+    "instruction": "Chào bác sĩ, em bị K buồng trứng, di căn hạch ổ bụng, đã hóa trị (vẫn còn hạch nhưng kích thước nhỏ hơn) và giảm tiểu cầu vô căn (TC chỉ từ 10.000-15.000). Bình thường không xuất huyết nhưng va chạm thì bị bầm, gãi mạnh thì nổi nốt đỏ. Vậy em có nên tiêm vaccine Covid-19 không?",
+    "input": "",
+    "output": "Thân gởi bạn Thu Hương, Về trường hợp của bạn, bạn nên tham khảo ý kiến của bác sĩ chuyên khoa Huyết học (về tình trạng giảm tiều cầu vô văn), phối hợp với ý kiến của bác sĩ chuyên khoa Ung bướu (đang điều trị, theo dõi bệnh lý K buồng trứng) về việc có nên tiêm vaccine Covid-19 hay không và nếu nên tiêm thì tiêm vào thời điểm nào, cũng như cần theo dõi và xử trí gì trước, trong, sau khi tiêm hay không bạn nhé. Chúc bạn sức khỏe! Thân mến!"
+  },
+  {
+    "instruction": "Chào bác sĩ, bố con năm nay 64 tuổi, mới mổ u ác thực quản được hơn một tháng nay. Bố con đang thực hiện hóa trị lần 4 và chuẩn bị làm lần 5. Cho con hỏi, nếu xin tạm ngưng hóa trị thì có ảnh hưởng gì về sau này không? Kết quả sau khi mổ, bác sĩ nói tốt, khối u đã được cắt bỏ cả gốc rễ, nhưng làm hóa trị để ngăn chặn mầm mống phát sinh sau này. Nhưng mỗi lần hóa trị, thuốc vào người làm cơ thể rất mệt mỏi, xuống sức. Bố con không ăn được, không ngủ được và thi thoảng bị tức ngực. Xin ý kiến từ bác sĩ. Con cảm ơn.",
+    "input": "",
+    "output": "Chào bạn, Việc điều trị hóa trị hỗ trợ sau phẫu thuật, nếu có thể, nên được điều trị liên tục, đủ liều và đúng liệu trình nhằm đạt được hiệu quả cao nhất. Thuốc hóa trị có các tác dụng phụ làm cho bệnh nhân mệt, ăn uống kém, ngủ kém. Bạn nên trao đổi với bác sĩ điều trị về tình trạng của bố mình để bác sĩ cân nhắc sử dụng các biện pháp hỗ trợ nâng đỡ thể trạng trong thời gian hóa trị, chẳng hạn như tăng cường dinh dưỡng, cải thiện triệu chứng khó chịu, bổ sung hoặc điều chỉnh các thuốc hỗ trợ nhằm làm nhẹ đi các tác dụng phụ của hóa trị. Khoảng thời gian này chắc chắn rất khó khăn cho chú và gia đình bạn. Mong chú và gia đình bạn có thể duy trì tinh thần thép, cố gắng cùng nhau đi đủ quá trình hóa trị hỗ trợ nhé. Chúc chú và gia đình nhiều sức khỏe! Thân mến!"
+  },
+  {
+    "instruction": "Chào bác sĩ, con gái em năm nay 9 tuổi và cháu thường bị đổ mồ hôi tay nhiều, nhất là vào mùa nóng và khi căng thẳng. Việc này khiến cháu nhiều khi khó chịu và hay cáu. Em sợ lớn hơn cháu có thể tự ti. Xin bác sĩ tư vấn cho cách khống chế mồ hôi tay hoặc điều trị an toàn cho cháu. Cảm ơn bác sĩ!",
+    "input": "",
+    "output": "Chào bạn, Tăng tiết mồ hôi tay ở trẻ em, người trẻ thường gặp là do tình trạng cường thần kinh giao cảm. Ngoài tình trạng dễ tiết mồ hôi tay, có thể kèm thêm nhịp tim nhanh, cũng có thể kèm tổn thương bẩm sinh tim mạch khác. Do đó, bạn nên đưa bé tới bệnh viện để được bác sĩ rực tiếp thăm khám, chỉ định thực hiện kiểm tra cận lâm sàng tìm nguyên nhân, từ đó có thể tư vấn hướng điều trị phù hợp cho bé. Thân mến!"
+  }
+]
