@@ -74,7 +74,7 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese."
 
         self.prompt_templates[Mutation.FRESH_START] = \
             self.prompt_templates['base'] + \
-            f"""Rewrite #Given Prompt# by switching the locale into Vietnamese and create #New Prompt#. 
+            f"""Rewrite #Given Prompt# by switching the locale into Vietnamese and create #New Prompt#.
             {write_in_vietnamese}
 
 #Given Prompt#:
@@ -83,7 +83,7 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese."
 
         self.prompt_templates[Mutation.COMPLICATE] = \
             self.prompt_templates['base'] + \
-            f"""Rewrite #Given Prompt# to make it slightly more complicated, and create #New Prompt#. 
+            f"""Rewrite #Given Prompt# to make it slightly more complicated, and create #New Prompt#.
             {write_in_vietnamese}
 
 #Given Prompt#:
@@ -92,7 +92,7 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese."
 
         self.prompt_templates[Mutation.ADD_CONSTRAINTS] = \
             self.prompt_templates['base'] + \
-            f"""Add a few more constraints or requirements to #Given Prompt#, 
+            f"""Add a few more constraints or requirements to #Given Prompt#,
             and create #New Prompt#. {write_in_vietnamese}
 
 #Given Prompt#:
@@ -117,7 +117,7 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese."
 
         self.prompt_templates[Mutation.INCREASE_REASONING] = \
             self.prompt_templates['base'] + \
-            f"""If #Given Prompt# can be solved with just a few simple thinking processes, rewrite it to explicitly 
+            f"""If #Given Prompt# can be solved with just a few simple thinking processes, rewrite it to explicitly
             request multi-step reasoning, and create #New Prompt#. {write_in_vietnamese}
 
 #Given Prompt#:
@@ -283,7 +283,7 @@ Answer with 'Equal' or 'Not Equal'. No need to explain the reason.""" % (before,
 
 class ChatGPTPipeline:
     def __init__(self):
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        openai.api_key = "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"
 
     def __call__(self, dataset):
         ret = []
@@ -294,7 +294,7 @@ class ChatGPTPipeline:
             while not response and count < 3:
                 try:
                     response = openai.ChatCompletion.create(
-                        model="gpt-3.5-turbo-0613",
+                        model="gpt-4",
                         messages=[{"role": "user", "content": d['text']}],
                     )
                 except:
@@ -336,51 +336,6 @@ def md_to_text(md, do_md_to_text=True):
     soup = BeautifulSoup(html, features='html.parser')
     return soup.get_text()
 
-
-class HFPipeline:
-    def __init__(self, model, max_new_tokens=None, batch_size=None, **kwargs):
-        from transformers import AutoTokenizer, AutoModelForCausalLM
-        print("loading tokenizer")
-        tokenizer = AutoTokenizer.from_pretrained(model, padding_side="left")
-        print("loading model")
-        model_obj = AutoModelForCausalLM.from_pretrained(model, torch_dtype=torch.bfloat16, device_map="auto")
-        pad_token_id = model_obj.config.eos_token_id
-        del model_obj
-        print("loading pipeline")
-        self.pipeline = pipeline(
-            model=model,
-            tokenizer=tokenizer,
-            torch_dtype=torch.bfloat16,
-            trust_remote_code=True,
-            device_map="auto",
-            **kwargs,
-        )
-        print("loading pipeline done.")
-        self.pipeline.tokenizer.pad_token_id = pad_token_id
-        self.max_new_tokens = max_new_tokens
-        self.batch_size = batch_size
-
-    def __call__(self, dataset):
-        """
-        Passes dataset to LLM and returns the responses.
-        :param dataset:  Hugging Face dataset containing a 'text' column with prompts.
-        :return: list of strings with responses.
-        """
-        ret = []
-        for i, out in enumerate(tqdm(
-                self.pipeline(
-                    KeyDataset(dataset, "text"),
-                    max_new_tokens=self.max_new_tokens,
-                    batch_size=self.batch_size,
-                )
-        )):
-            # remove input in case pipeline is using completion/plain prompt
-            response = out[0]["generated_text"]
-            response = response.replace(dataset[i]['text'], '').strip()
-            ret.append(response)
-        return ret
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Options')
     parser.add_argument("--seed_file", type=str)
@@ -404,7 +359,7 @@ if __name__ == "__main__":
     )
     wizardlm.run()
 
-# python evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20
+# python gpt-4/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20
 
 # def test_check():
 #     import pickle
