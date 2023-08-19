@@ -309,25 +309,6 @@ class ChatGPTPipeline:
                 print(gen_count)
         return ret
 
-
-class GradioClientPipeline:
-    def __init__(self, host, **kwargs):
-        from gradio_client import Client
-        self.client = Client(host)
-        self.kwargs = kwargs
-
-    def __call__(self, dataset):
-        ret = []
-        for d in dataset:
-            self.kwargs['instruction_nochat'] = d['text']
-            res = self.client.predict(
-                str(dict(self.kwargs)),
-                api_name='/submit_nochat_api'
-            )
-            ret.append(md_to_text(ast.literal_eval(res)['response']))
-        return ret
-
-
 def md_to_text(md, do_md_to_text=True):
     if not do_md_to_text:
         return md
@@ -359,10 +340,4 @@ if __name__ == "__main__":
     )
     wizardlm.run()
 
-# python gpt-4/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20
-
-# def test_check():
-#     import pickle
-#     with open("prompts.pickle", "rb") as f:
-#         X = pickle.loads(f.read())
-#         print(X)
+# CUDA_VISIBLE_DEVICES=1,2,3 python gpt-4/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20

@@ -332,10 +332,4 @@ if __name__ == "__main__":
     )
     wizardlm.run()
 
-# python gpt-3.5/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20
-
-# def test_check():
-#     import pickle
-#     with open("prompts.pickle", "rb") as f:
-#         X = pickle.loads(f.read())
-#         print(X)
+# CUDA_VISIBLE_DEVICES=1,2,3 python gpt-3.5/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20

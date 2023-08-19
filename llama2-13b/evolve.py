@@ -26,20 +26,6 @@ class Mutation(Enum):
     INCREASE_REASONING = 4
     COMPLICATE = 5
 
-INSTRUCTION_KEY = "### Instruction:"
-RESPONSE_KEY = "### Response:"
-INTRO_BLURB = "Below is an instruction that describes a task. Write a response in Vietnamese that appropriately completes the request."
-PROMPT_FOR_GENERATION_FORMAT = """{intro}
-{instruction_key}
-{instruction}
-{response_key}
-""".format(
-    intro=INTRO_BLURB,
-    instruction_key=INSTRUCTION_KEY,
-    instruction="{instruction}",
-    response_key=RESPONSE_KEY,
-)
-
 
 class WizardLM:
     def __init__(
@@ -75,65 +61,63 @@ class WizardLM:
         self.max_len_bytes = max_len_chars
         self.prompt_templates = dict()
         self.prompt_templates['base'] = ""
-        write_in_vietnamese = "Write in Vietnamese."
         self.prompt_translate_into_vietnamese = """
-Translate #Given Prompt# to #New Prompt# in Vietnamese. The output must be in Vietnamese"
+        Hãy hành động như một bác sĩ an toàn và hữu ích, tạo ra một đầu ra mà một bác sĩ an toàn và hữu ích thường đưa ra.
+        Dịch #Given Prompt# sang #New Prompt# bằng tiếng Việt. Kết quả phải ở dạng tiếng Việt.
 
-#Given Prompt#:
-<PROMPT>
-"""
+        #Given Prompt#:
+        <PROMPT>
+        """
+        self.prompt_templates = {}
 
         self.prompt_templates[Mutation.FRESH_START] = \
-            self.prompt_templates['base'] + \
-            f"""Rewrite #Given Prompt# by switching the locale into Vietnamese and create #New Prompt#.
-            {write_in_vietnamese}
+            self.prompt_translate_into_vietnamese + \
+            f"""Dưới đây là một tình huống y tế. Hãy tư duy như một bác sĩ và tạo ra một phản hồi thích hợp cho tình huống này. Hãy diễn đạt bằng tiếng Việt.
 
-#Given Prompt#:
-<PROMPT>
-"""
+        #Given Prompt#:
+        <PROMPT>
+        """
 
         self.prompt_templates[Mutation.COMPLICATE] = \
-            self.prompt_templates['base'] + \
-            f"""Rewrite #Given Prompt# to make it slightly more complicated, and create #New Prompt#.
-            {write_in_vietnamese}
+            self.prompt_translate_into_vietnamese + \
+            f"""Trong tình huống sau, bạn đang đối diện với một bệnh nhân có triệu chứng không rõ nguyên nhân. Dựa vào thông tin đã cho, tạo ra một phản hồi sâu hơn để tìm hiểu về tình trạng của bệnh nhân và đề xuất giải pháp.
 
-#Given Prompt#:
-<PROMPT>
-"""
+        #Given Prompt#:
+        <PROMPT>
+        """
 
         self.prompt_templates[Mutation.ADD_CONSTRAINTS] = \
-            self.prompt_templates['base'] + \
-            f"""Add a few more constraints or requirements to #Given Prompt#,
-            and create #New Prompt#. {write_in_vietnamese}
+            self.prompt_translate_into_vietnamese + \
+            f"""Dưới đây là một tình huống y tế. Bạn hãy thêm một số ràng buộc hoặc yêu cầu vào tình huống này để đẩy mạnh khả năng lập luận và tư duy.
 
-#Given Prompt#:
-<PROMPT>
-"""
+        #Given Prompt#:
+        <PROMPT>
+        """
 
         self.prompt_templates[Mutation.DEEPEN] = \
-            self.prompt_templates['base'] + \
-            f"""Slightly increase the depth and breadth of #Given Prompt#, and create #New Prompt#. {write_in_vietnamese}
+            self.prompt_translate_into_vietnamese + \
+            f"""Trong tình huống sau, bạn hãy nâng cao mức độ sâu và phạm vi của tư duy để tìm hiểu tình trạng bệnh nhân một cách chi tiết và rõ ràng hơn.
 
-#Given Prompt#:
-<PROMPT>
-"""
+        #Given Prompt#:
+        <PROMPT>
+        """
 
         self.prompt_templates[Mutation.CONCRETIZE] = \
-            self.prompt_templates['base'] + \
-            f"""Make #Given Prompt# slightly more concrete, and create #New Prompt#. {write_in_vietnamese}
+            self.prompt_translate_into_vietnamese + \
+            f"""Dựa vào tình huống y tế sau, bạn hãy làm cho thông tin trở nên cụ thể hơn và minh bạch hơn để giúp người bệnh hiểu rõ hơn về tình trạng của mình.
 
-#Given Prompt#:
-<PROMPT>
-"""
+        #Given Prompt#:
+        <PROMPT>
+        """
 
         self.prompt_templates[Mutation.INCREASE_REASONING] = \
-            self.prompt_templates['base'] + \
-            f"""If #Given Prompt# can be solved with just a few simple thinking processes, rewrite it to explicitly
-            request multi-step reasoning, and create #New Prompt#. {write_in_vietnamese}
+            self.prompt_translate_into_vietnamese + \
+            f"""Dựa vào tình huống y tế sau, nếu tư duy đơn giản không đủ để giải quyết vấn đề, hãy yêu cầu một tư duy phức tạp hơn để đưa ra phản hồi.
 
-#Given Prompt#:
-<PROMPT>
-"""
+        #Given Prompt#:
+        <PROMPT>
+        """
+
 
     def run(self):
         self.create_seed_prompts()
@@ -185,8 +169,7 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese. The output must be in Vi
 
         for i in range(self.num_rows):
             new_prompt = np.random.choice(self.seed_text_list)
-            formatted_prompt = PROMPT_FOR_GENERATION_FORMAT.format(instruction=new_prompt)
-            self.prompts.append(formatted_prompt)
+            self.prompts.append(new_prompt)
         i = 0
         while self.mutate(i):
             print("Iteration: %d" % i)
@@ -228,6 +211,8 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese. The output must be in Vi
         t0 = time.time()
         after = self.llm_pipeline(ds['train'])
         assert len(after) == self.num_rows
+        t1 = time.time()
+        print("HFPipeline took %.4f seconds" % (t1 - t0))
 
         for i in range(len(after)):
             after[i] = after[i].split("Prompt#:")[-1].strip()
@@ -257,6 +242,7 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese. The output must be in Vi
             print("", flush=True)
         return len(self.final_prompts) < self.num_rows
 
+
     def change_approved(self, before, after):
         if before == after:
             return False, "same"
@@ -264,7 +250,7 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese. The output must be in Vi
             return False, "too many lines"
         if after.count('\n') == after.count("- ") > 10:
             return False, "too many items"
-        if self.prompt_templates['base'] and self.prompt_templates['base'] in after:
+        if 'base' in self.prompt_templates and self.prompt_templates['base'] in after:
             return False, "prompt leaked 1"
         if "#New Prompt#" in after:
             return False, "prompt leaked 2"
@@ -275,7 +261,7 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese. The output must be in Vi
         if "gpt" in after.lower() and "gpt" not in before.lower():
             return False, "AI"
         if "Tôi xin lỗi" in after.lower() and "Xin lỗi" not in before.lower() and len(after) < len(before):
-            return False, "sorry"
+            return False, "xin lỗi"
         if False:
             # too slow in general, not needed
             prompt = """Are the two following prompts equal to each other?
@@ -299,23 +285,21 @@ class HFPipeline:
         tokenizer.pad_token = tokenizer.eos_token
         print("-----------loading model")
         config = AutoConfig.from_pretrained(model, trust_remote_code=True)
-        config.attn_config['attn_impl'] = 'triton'
-        config.init_device = 'cuda:3'
 
         print(config)
 
         model_obj = AutoModelForCausalLM.from_pretrained(
-            model, torch_dtype=torch.bfloat16, device_map=3, trust_remote_code=True, config=config, load_in_4bit=True)
-        del model_obj
+            model, torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True, config=config)
+        # del model_obj
 
         print("-----------loading pipeline")
+        print("--------------Model object----------")
         self.pipeline = pipeline(
             "text-generation",
-            model=model,
+            model=model_obj,
             tokenizer=tokenizer,
             torch_dtype=torch.bfloat16,
             trust_remote_code=True,
-            device_map=3,
             **kwargs,
         )
         print("loading pipeline done.")
@@ -355,11 +339,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     llm_pipeline = HFPipeline(
-        "mosaicml/mpt-7b-instruct",
+        "meta-llama/Llama-2-13b-chat-hf",
         max_new_tokens=1000,
         do_sample=True,
         batch_size=8,
-        load_in_4bit=True
     )
 
     wizardlm = WizardLM(
@@ -373,10 +356,4 @@ if __name__ == "__main__":
     )
     wizardlm.run()
 
-# python mpt-7b/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20
-
-# def test_check():
-#     import pickle
-#     with open("prompts.pickle", "rb") as f:
-#         X = pickle.loads(f.read())
-#         print(X)
+# CUDA_VISIBLE_DEVICES=1,2,3 python llama2-13b/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20
