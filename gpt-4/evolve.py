@@ -41,16 +41,6 @@ class WizardLM:
             max_len_chars: int = 1024,
             verbose: bool = False,
     ):
-        """
-        Open-Source Implementation of https://arxiv.org/abs/2304.12244
-
-        :param llm_pipeline: Pipeline that takes a HF dataset containing one string column and returns a list of strings
-        :param seed_data: Optional data to create Q:A pairs from, list of strings containing prompts
-        :param num_rows: Number of desired Q:A pairs
-        :param min_len_bytes: Lower limit for prompt length in bytes
-        :param max_len_bytes: Upper limit for prompt length in bytes
-        :param verbose: Whether to enable verbose printing.
-        """
         self.llm_pipeline = llm_pipeline
         self.column_names = column_names
         self.num_rows = num_rows
@@ -283,7 +273,7 @@ Answer with 'Equal' or 'Not Equal'. No need to explain the reason.""" % (before,
 
 class ChatGPTPipeline:
     def __init__(self):
-        openai.api_key = "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"
+        openai.api_key = os.getenv("OPENAI_API_KEY_GPT_4")
 
     def __call__(self, dataset):
         ret = []

@@ -9,13 +9,11 @@ import torch
 from datasets import Dataset, DatasetDict
 import torch
 from tqdm import tqdm
-from dotenv import load_dotenv
 from tqdm.auto import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, AutoConfig
 from transformers.pipelines.pt_utils import KeyDataset
 import argparse
 from datasets import load_dataset
-load_dotenv()
 
 
 class Mutation(Enum):
@@ -52,16 +50,6 @@ class WizardLM:
             max_len_chars: int = 1024,
             verbose: bool = False,
     ):
-        """
-        Open-Source Implementation of https://arxiv.org/abs/2304.12244
-
-        :param llm_pipeline: Pipeline that takes a HF dataset containing one string column and returns a list of strings
-        :param seed_data: Optional data to create Q:A pairs from, list of strings containing prompts
-        :param num_rows: Number of desired Q:A pairs
-        :param min_len_bytes: Lower limit for prompt length in bytes
-        :param max_len_bytes: Upper limit for prompt length in bytes
-        :param verbose: Whether to enable verbose printing.
-        """
         self.llm_pipeline = llm_pipeline
         self.column_names = column_names
         self.num_rows = num_rows
@@ -139,11 +127,6 @@ Translate #Given Prompt# to #New Prompt# in Vietnamese. The output must be in Vi
         self.create_seed_prompts()
         self.create_prompts()
         self.create_answers()
-        # import pickle
-        # with open("prompts.pickle", "wb") as f:
-        #     f.write(pickle.dumps(self.final_prompts))
-        # with open("responses.pickle", "wb") as f:
-        #     f.write(pickle.dumps(self.final_answers))
         list_qa = []
         for i in range(len(self.final_prompts)):
             if len(self.final_answers[i]) > 10:
@@ -373,7 +356,7 @@ if __name__ == "__main__":
     )
     wizardlm.run()
 
-# python mpt-7b/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20
+# CUDA_VISIBLE_DEVICES=3 python mpt-7b/evolve.py --seed_file seed_data.json --column_names instruction input --num_rows 20
 
 # def test_check():
 #     import pickle
