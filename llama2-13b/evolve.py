@@ -1,22 +1,18 @@
-import ast
+import argparse
 import time
 from enum import Enum
+import json
+import uuid
 from typing import List
 
 import numpy as np
 import pandas as pd
 import torch
-from datasets import Dataset, DatasetDict
-import torch
+from datasets import Dataset, DatasetDict, load_dataset
 from tqdm import tqdm
-from dotenv import load_dotenv
 from tqdm.auto import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, AutoConfig
 from transformers.pipelines.pt_utils import KeyDataset
-import argparse
-from datasets import load_dataset
-load_dotenv()
-
 
 class Mutation(Enum):
     FRESH_START = 0
@@ -38,16 +34,6 @@ class WizardLM:
             max_len_chars: int = 1024,
             verbose: bool = False,
     ):
-        """
-        Open-Source Implementation of https://arxiv.org/abs/2304.12244
-
-        :param llm_pipeline: Pipeline that takes a HF dataset containing one string column and returns a list of strings
-        :param seed_data: Optional data to create Q:A pairs from, list of strings containing prompts
-        :param num_rows: Number of desired Q:A pairs
-        :param min_len_bytes: Lower limit for prompt length in bytes
-        :param max_len_bytes: Upper limit for prompt length in bytes
-        :param verbose: Whether to enable verbose printing.
-        """
         self.llm_pipeline = llm_pipeline
         self.column_names = column_names
         self.num_rows = num_rows
@@ -61,6 +47,7 @@ class WizardLM:
         self.max_len_bytes = max_len_chars
         self.prompt_templates = dict()
         self.prompt_templates['base'] = ""
+        write_in_vietnamese = "Viết bằng tiếng Việt."
         self.prompt_translate_into_vietnamese = """
         Hãy hành động như một bác sĩ an toàn và hữu ích, tạo ra một đầu ra mà một bác sĩ an toàn và hữu ích thường đưa ra.
         Dịch #Given Prompt# sang #New Prompt# bằng tiếng Việt. Kết quả phải ở dạng tiếng Việt.
@@ -68,11 +55,10 @@ class WizardLM:
         #Given Prompt#:
         <PROMPT>
         """
-        self.prompt_templates = {}
 
         self.prompt_templates[Mutation.FRESH_START] = \
             self.prompt_translate_into_vietnamese + \
-            f"""Dưới đây là một tình huống y tế. Hãy tư duy như một bác sĩ và tạo ra một phản hồi thích hợp cho tình huống này. Hãy diễn đạt bằng tiếng Việt.
+            f"""Dưới đây là một tình huống y tế. Hãy tư duy như một bác sĩ và tạo ra một phản hồi thích hợp cho tình huống này. {write_in_vietnamese}
 
         #Given Prompt#:
         <PROMPT>
@@ -80,7 +66,7 @@ class WizardLM:
 
         self.prompt_templates[Mutation.COMPLICATE] = \
             self.prompt_translate_into_vietnamese + \
-            f"""Trong tình huống sau, bạn đang đối diện với một bệnh nhân có triệu chứng không rõ nguyên nhân. Dựa vào thông tin đã cho, tạo ra một phản hồi sâu hơn để tìm hiểu về tình trạng của bệnh nhân và đề xuất giải pháp.
+            f"""Trong tình huống sau, bạn đang đối diện với một bệnh nhân có triệu chứng không rõ nguyên nhân. Dựa vào thông tin đã cho, tạo ra một phản hồi sâu hơn để tìm hiểu về tình trạng của bệnh nhân và đề xuất giải pháp. {write_in_vietnamese}
 
         #Given Prompt#:
         <PROMPT>
@@ -88,7 +74,7 @@ class WizardLM:
 
         self.prompt_templates[Mutation.ADD_CONSTRAINTS] = \
             self.prompt_translate_into_vietnamese + \
-            f"""Dưới đây là một tình huống y tế. Bạn hãy thêm một số ràng buộc hoặc yêu cầu vào tình huống này để đẩy mạnh khả năng lập luận và tư duy.
+            f"""Dưới đây là một tình huống y tế. Bạn hãy thêm một số ràng buộc hoặc yêu cầu vào tình huống này để đẩy mạnh khả năng lập luận và tư duy. {write_in_vietnamese}
 
         #Given Prompt#:
         <PROMPT>
@@ -96,7 +82,7 @@ class WizardLM:
 
         self.prompt_templates[Mutation.DEEPEN] = \
             self.prompt_translate_into_vietnamese + \
-            f"""Trong tình huống sau, bạn hãy nâng cao mức độ sâu và phạm vi của tư duy để tìm hiểu tình trạng bệnh nhân một cách chi tiết và rõ ràng hơn.
+            f"""Trong tình huống sau, bạn hãy nâng cao mức độ sâu và phạm vi của tư duy để tìm hiểu tình trạng bệnh nhân một cách chi tiết và rõ ràng hơn. {write_in_vietnamese}
 
         #Given Prompt#:
         <PROMPT>
@@ -104,7 +90,7 @@ class WizardLM:
 
         self.prompt_templates[Mutation.CONCRETIZE] = \
             self.prompt_translate_into_vietnamese + \
-            f"""Dựa vào tình huống y tế sau, bạn hãy làm cho thông tin trở nên cụ thể hơn và minh bạch hơn để giúp người bệnh hiểu rõ hơn về tình trạng của mình.
+            f"""Dựa vào tình huống y tế sau, bạn hãy làm cho thông tin trở nên cụ thể hơn và minh bạch hơn để giúp người bệnh hiểu rõ hơn về tình trạng của mình. {write_in_vietnamese}
 
         #Given Prompt#:
         <PROMPT>
@@ -112,22 +98,16 @@ class WizardLM:
 
         self.prompt_templates[Mutation.INCREASE_REASONING] = \
             self.prompt_translate_into_vietnamese + \
-            f"""Dựa vào tình huống y tế sau, nếu tư duy đơn giản không đủ để giải quyết vấn đề, hãy yêu cầu một tư duy phức tạp hơn để đưa ra phản hồi.
+            f"""Dựa vào tình huống y tế sau, nếu tư duy đơn giản không đủ để giải quyết vấn đề, hãy yêu cầu một tư duy phức tạp hơn để đưa ra phản hồi. {write_in_vietnamese}
 
         #Given Prompt#:
         <PROMPT>
         """
 
-
     def run(self):
         self.create_seed_prompts()
         self.create_prompts()
         self.create_answers()
-        # import pickle
-        # with open("prompts.pickle", "wb") as f:
-        #     f.write(pickle.dumps(self.final_prompts))
-        # with open("responses.pickle", "wb") as f:
-        #     f.write(pickle.dumps(self.final_answers))
         list_qa = []
         for i in range(len(self.final_prompts)):
             if len(self.final_answers[i]) > 10:
@@ -137,11 +117,13 @@ class WizardLM:
                         'output': self.final_answers[i],
                     }
                 )
-        import json
-        import uuid
-        with open(f"{self.seed_data.replace('.jsonl', '').replace('json', '')}.%s.json" % str(uuid.uuid4())[:4],
-                  "wt") as f:
-            f.write(json.dumps(list_qa, indent=2, ensure_ascii=False))
+
+        json_filename = f"{self.seed_data.replace('.jsonl', '').replace('json', '')}.%s.json" % str(uuid.uuid4())[:4]
+
+        with open(json_filename, "a") as f:
+            for qa in list_qa:
+                json.dump(qa, f, indent=2, ensure_ascii=False)
+                f.write('\n')
 
     def create_seed_prompts(self):
         """
@@ -156,7 +138,6 @@ class WizardLM:
             data = load_dataset("json", data_files=self.seed_data)
             self.seed_text_list = [d["instruction"] for d in data['train']]
             assert self.seed_text_list, "data import failed, got empty list"
-
 
     def create_prompts(self):
         """
@@ -242,7 +223,6 @@ class WizardLM:
             print("", flush=True)
         return len(self.final_prompts) < self.num_rows
 
-
     def change_approved(self, before, after):
         if before == after:
             return False, "same"
@@ -289,7 +269,7 @@ class HFPipeline:
         print(config)
 
         model_obj = AutoModelForCausalLM.from_pretrained(
-            model, torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True, config=config)
+            model, torch_dtype=torch.bfloat16, trust_remote_code=True, config=config)
         # del model_obj
 
         print("-----------loading pipeline")
@@ -339,10 +319,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     llm_pipeline = HFPipeline(
-        "meta-llama/Llama-2-13b-chat-hf",
+        "junelee/wizard-vicuna-13b",
         max_new_tokens=1000,
         do_sample=True,
-        batch_size=8,
+        batch_size=8
     )
 
     wizardlm = WizardLM(
