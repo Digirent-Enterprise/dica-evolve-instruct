@@ -118,12 +118,8 @@ class WizardLM:
                     }
                 )
 
-        json_filename = f"{self.seed_data.replace('.jsonl', '').replace('json', '')}.%s.json" % str(uuid.uuid4())[:4]
-
-        with open(json_filename, "a") as f:
-            for qa in list_qa:
-                json.dump(qa, f, indent=2, ensure_ascii=False)
-                f.write('\n')
+        with open(f"{self.seed_data.replace('.jsonl', '').replace('json', '')}.%s.json" % str(uuid.uuid4())[:4], "wt") as f:
+            f.write(json.dumps(list_qa, indent=2, ensure_ascii=False))
 
     def create_seed_prompts(self):
         """
@@ -230,7 +226,7 @@ class WizardLM:
             return False, "too many lines"
         if after.count('\n') == after.count("- ") > 10:
             return False, "too many items"
-        if 'base' in self.prompt_templates and self.prompt_templates['base'] in after:
+        if self.prompt_templates['base'] and self.prompt_templates['base'] in after:
             return False, "prompt leaked 1"
         if "#New Prompt#" in after:
             return False, "prompt leaked 2"
@@ -261,27 +257,27 @@ class HFPipeline:
     def __init__(self, model, max_new_tokens=None, batch_size=None, **kwargs):
         print("loading tokenizer")
         tokenizer = AutoTokenizer.from_pretrained(
-            model, padding_side="left", device_map=3, trust_remote_code=True)
+            model, padding_side="left", device_map="auto", trust_remote_code=True)
         tokenizer.pad_token = tokenizer.eos_token
-        print("-----------loading model")
+        print("loading model")
         config = AutoConfig.from_pretrained(model, trust_remote_code=True)
 
-        print(config)
-
         model_obj = AutoModelForCausalLM.from_pretrained(
-            model, torch_dtype=torch.bfloat16, trust_remote_code=True, config=config)
-        # del model_obj
+            model, torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True, config=config)
+        del model_obj
 
-        print("-----------loading pipeline")
-        print("--------------Model object----------")
+        print("loading pipeline")
+        print("model object")
         self.pipeline = pipeline(
             "text-generation",
-            model=model_obj,
+            model=model,
             tokenizer=tokenizer,
             torch_dtype=torch.bfloat16,
             trust_remote_code=True,
+            device_map="auto",
             **kwargs,
         )
+        print(self.pipeline("chào"))
         print("loading pipeline done.")
         self.max_new_tokens = max_new_tokens
         self.batch_size = batch_size
@@ -319,7 +315,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     llm_pipeline = HFPipeline(
-        "junelee/wizard-vicuna-13b",
+        "meta-llama/Llama-2-7b-chat-hf",
         max_new_tokens=1000,
         do_sample=True,
         batch_size=8
